@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of Copy of Copy of English Practice App",
+  "description": "An interactive quiz app for 6th-grade students to practice English. Features include a verb tense quiz (present to past) and a sentence-building exercise.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
