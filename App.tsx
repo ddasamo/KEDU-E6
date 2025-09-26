@@ -664,10 +664,10 @@ const App: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex flex-col items-center justify-center p-4 font-sans">
+    <>
       <h1 className="text-2xl font-bold text-slate-700 mb-6">경동초 맞춤형 영어교육 프로그램</h1>
       {renderContent()}
-    </div>
+    </>
   );
 };
 
