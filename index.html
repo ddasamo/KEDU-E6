@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경동초 맞춤형 영어교육 프로그램</title>
@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
+  <body>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useCallback, useMemo } = React;
@@ -65,7 +65,7 @@
         // 앱 상태
         const ResultState = { IDLE: 'IDLE', CORRECT: 'CORRECT', INCORRECT: 'INCORRECT' };
         const QuizMode = { PRESENT_TO_PAST: 'PRESENT_TO_PAST', PAST_TO_PRESENT: 'PAST_TO_PRESENT' };
-        const AppMode = { START: 'START', WORD_QUIZ: 'WORD_QUIZ', SENTENCE_QUIZ: 'SENTENCE_QUIZ' };
+        const AppMode = { START: 'START', WORD_QUIZ: 'WORD_QUIZ', SENTENCE_QUIZ: 'SENTENCE_QUIZ', TEACHER_MENU: 'TEACHER_MENU', CREATE_WORD: 'CREATE_WORD', CREATE_SENTENCE: 'CREATE_SENTENCE' };
 
         // 유틸리티 함수
         const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -88,6 +88,14 @@
             className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
         }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }));
 
+        const PlusIcon = () => React.createElement('svg', {
+            className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
+        }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 4v16m8-8H4" }));
+
+        const TeacherIcon = () => React.createElement('svg', {
+            className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
+        }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" }));
+
         // 시작 화면
         const StartScreen = ({ onSelectMode }) => React.createElement('div', { className: "w-full max-w-xl mx-auto text-center" },
             React.createElement('div', { className: "bg-white rounded-2xl shadow-2xl p-6 md:p-10" }, [
@@ -103,13 +111,21 @@
                         key: "sentence-quiz",
                         onClick: () => onSelectMode(AppMode.SENTENCE_QUIZ),
                         className: "w-full py-4 px-6 bg-teal-600 text-white font-bold text-xl rounded-lg shadow-md hover:bg-teal-700 transition-transform transform hover:scale-105"
-                    }, "문장 만들기 (Make Sentences)")
+                    }, "문장 만들기 (Make Sentences)"),
+                    React.createElement('button', {
+                        key: "teacher-menu",
+                        onClick: () => onSelectMode(AppMode.TEACHER_MENU),
+                        className: "w-full py-4 px-6 bg-purple-600 text-white font-bold text-xl rounded-lg shadow-md hover:bg-purple-700 transition-transform transform hover:scale-105 flex items-center justify-center gap-2"
+                    }, [
+                        React.createElement(TeacherIcon, { key: "icon" }),
+                        React.createElement('span', { key: "text" }, "교사용 문제 만들기")
+                    ])
                 ])
             ])
         );
 
         // 단어 퀴즈 컴포넌트
-        const WordQuiz = ({ onBack }) => {
+        const WordQuiz = ({ onBack, customVocabulary }) => {
             const [words, setWords] = useState([]);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [userInput, setUserInput] = useState('');
@@ -119,9 +135,10 @@
             const [quizMode, setQuizMode] = useState(getRandomQuizMode());
 
             useEffect(() => {
-                setWords(shuffleArray(VOCABULARY));
+                const wordsToUse = customVocabulary || VOCABULARY;
+                setWords(shuffleArray(wordsToUse));
                 setQuizMode(getRandomQuizMode());
-            }, []);
+            }, [customVocabulary]);
 
             const currentWord = useMemo(() => words[currentIndex], [words, currentIndex]);
 
@@ -164,7 +181,8 @@
             };
 
             const handleRestart = () => {
-                setWords(shuffleArray(VOCABULARY));
+                const wordsToUse = customVocabulary || VOCABULARY;
+                setWords(shuffleArray(wordsToUse));
                 setCurrentIndex(0);
                 setUserInput('');
                 setResult(ResultState.IDLE);
@@ -259,7 +277,7 @@
         };
 
         // 문장 퀴즈 컴포넌트
-        const SentenceQuiz = ({ onBack }) => {
+        const SentenceQuiz = ({ onBack, customSentences }) => {
             const [questions, setQuestions] = useState([]);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [userInput, setUserInput] = useState('');
@@ -268,8 +286,9 @@
             const [isFinished, setIsFinished] = useState(false);
 
             useEffect(() => {
-                setQuestions(shuffleArray(SENTENCE_QUESTIONS));
-            }, []);
+                const questionsToUse = customSentences || SENTENCE_QUESTIONS;
+                setQuestions(shuffleArray(questionsToUse));
+            }, [customSentences]);
 
             const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex]);
             const normalizeAnswer = (str) => str.toLowerCase().replace(/[.,?]/g, '').replace(/\s+/g, ' ').trim();
@@ -294,7 +313,8 @@
             };
 
             const handleRestart = () => {
-                setQuestions(shuffleArray(SENTENCE_QUESTIONS));
+                const questionsToUse = customSentences || SENTENCE_QUESTIONS;
+                setQuestions(shuffleArray(questionsToUse));
                 setCurrentIndex(0);
                 setUserInput('');
                 setResult(ResultState.IDLE);
@@ -372,16 +392,229 @@
             ]);
         };
 
+        // 교사용 메뉴 컴포넌트
+        const TeacherMenu = ({ onBack, onSelectMode, setCustomVocabulary, setCustomSentences }) => {
+            return React.createElement('div', { className: "w-full max-w-xl mx-auto" }, [
+                React.createElement('header', { key: "header", className: "text-center mb-8 relative" }, [
+                    React.createElement('button', {
+                        key: "back",
+                        onClick: onBack,
+                        className: "absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200"
+                    }, React.createElement(BackArrowIcon)),
+                    React.createElement('h1', {
+                        key: "title",
+                        className: "text-4xl md:text-5xl font-bold text-slate-800"
+                    }, "교사용 문제 만들기")
+                ]),
+                React.createElement('div', { key: "content", className: "bg-white rounded-2xl shadow-2xl p-6 md:p-10" }, [
+                    React.createElement('div', { key: "buttons", className: "space-y-4" }, [
+                        React.createElement('button', {
+                            key: "create-word",
+                            onClick: () => onSelectMode(AppMode.CREATE_WORD),
+                            className: "w-full py-4 px-6 bg-indigo-600 text-white font-bold text-xl rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105 flex items-center justify-center gap-2"
+                        }, [
+                            React.createElement(PlusIcon, { key: "icon" }),
+                            React.createElement('span', { key: "text" }, "단어 문제 만들기")
+                        ]),
+                        React.createElement('button', {
+                            key: "create-sentence",
+                            onClick: () => onSelectMode(AppMode.CREATE_SENTENCE),
+                            className: "w-full py-4 px-6 bg-teal-600 text-white font-bold text-xl rounded-lg shadow-md hover:bg-teal-700 transition-transform transform hover:scale-105 flex items-center justify-center gap-2"
+                        }, [
+                            React.createElement(PlusIcon, { key: "icon" }),
+                            React.createElement('span', { key: "text" }, "문장 문제 만들기")
+                        ])
+                    ])
+                ])
+            ]);
+        };
+
+        // 단어 문제 만들기 컴포넌트
+        const CreateWordProblems = ({ onBack, setCustomVocabulary }) => {
+            const [inputText, setInputText] = useState('');
+            const [words, setWords] = useState([]);
+
+            const handleAddWord = () => {
+                const lines = inputText.split('\n').filter(line => line.trim());
+                const newWords = [];
+                
+                lines.forEach(line => {
+                    const parts = line.split(',').map(part => part.trim());
+                    if (parts.length >= 3) {
+                        newWords.push({
+                            present: parts[0],
+                            past: parts[1],
+                            korean: parts[2]
+                        });
+                    }
+                });
+                
+                if (newWords.length > 0) {
+                    setWords(newWords);
+                    setCustomVocabulary(newWords);
+                    alert(`${newWords.length}개의 단어가 추가되었습니다!`);
+                    setInputText('');
+                }
+            };
+
+            return React.createElement('div', { className: "w-full max-w-2xl mx-auto" }, [
+                React.createElement('header', { key: "header", className: "text-center mb-8 relative" }, [
+                    React.createElement('button', {
+                        key: "back",
+                        onClick: onBack,
+                        className: "absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200"
+                    }, React.createElement(BackArrowIcon)),
+                    React.createElement('h1', {
+                        key: "title",
+                        className: "text-3xl md:text-4xl font-bold text-slate-800"
+                    }, "단어 문제 만들기")
+                ]),
+                React.createElement('div', { key: "content", className: "bg-white rounded-2xl shadow-2xl p-6 md:p-10" }, [
+                    React.createElement('div', { key: "instructions", className: "mb-6" }, [
+                        React.createElement('h2', { key: "title", className: "text-xl font-bold text-slate-700 mb-3" }, "사용법:"),
+                        React.createElement('p', { key: "desc", className: "text-slate-600 mb-2" }, "각 줄에 '현재형,과거형,한국어' 형식으로 입력하세요."),
+                        React.createElement('p', { key: "example", className: "text-slate-500 text-sm" }, "예: go,went,가다")
+                    ]),
+                    React.createElement('textarea', {
+                        key: "input",
+                        value: inputText,
+                        onChange: (e) => setInputText(e.target.value),
+                        placeholder: "go,went,가다\ncome,came,오다\neat,ate,먹다",
+                        className: "w-full p-4 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none",
+                        rows: 8
+                    }),
+                    React.createElement('button', {
+                        key: "submit",
+                        onClick: handleAddWord,
+                        className: "w-full mt-4 py-3 bg-indigo-600 text-white font-bold text-lg rounded-lg shadow-md hover:bg-indigo-700"
+                    }, "단어 추가하기"),
+                    words.length > 0 && React.createElement('div', { key: "preview", className: "mt-6 p-4 bg-green-50 rounded-lg" }, [
+                        React.createElement('h3', { key: "title", className: "font-bold text-green-800 mb-2" }, "추가된 단어들:"),
+                        React.createElement('div', { key: "words", className: "space-y-1" },
+                            words.map((word, index) => 
+                                React.createElement('p', { key: index, className: "text-green-700" }, 
+                                    `${word.present} → ${word.past} (${word.korean})`
+                                )
+                            )
+                        )
+                    ])
+                ])
+            ]);
+        };
+
+        // 문장 문제 만들기 컴포넌트
+        const CreateSentenceProblems = ({ onBack, setCustomSentences }) => {
+            const [inputText, setInputText] = useState('');
+            const [sentences, setSentences] = useState([]);
+
+            const handleAddSentence = () => {
+                const lines = inputText.split('\n').filter(line => line.trim());
+                const newSentences = [];
+                
+                lines.forEach(line => {
+                    const parts = line.split('|').map(part => part.trim());
+                    if (parts.length >= 2) {
+                        const answer = parts[1];
+                        const words = answer.split(' ').filter(word => word.trim());
+                        const scrambled = shuffleArray(words);
+                        
+                        newSentences.push({
+                            korean: parts[0],
+                            answer: answer,
+                            scrambled: scrambled
+                        });
+                    }
+                });
+                
+                if (newSentences.length > 0) {
+                    setSentences(newSentences);
+                    setCustomSentences(newSentences);
+                    alert(`${newSentences.length}개의 문장이 추가되었습니다!`);
+                    setInputText('');
+                }
+            };
+
+            return React.createElement('div', { className: "w-full max-w-2xl mx-auto" }, [
+                React.createElement('header', { key: "header", className: "text-center mb-8 relative" }, [
+                    React.createElement('button', {
+                        key: "back",
+                        onClick: onBack,
+                        className: "absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200"
+                    }, React.createElement(BackArrowIcon)),
+                    React.createElement('h1', {
+                        key: "title",
+                        className: "text-3xl md:text-4xl font-bold text-slate-800"
+                    }, "문장 문제 만들기")
+                ]),
+                React.createElement('div', { key: "content", className: "bg-white rounded-2xl shadow-2xl p-6 md:p-10" }, [
+                    React.createElement('div', { key: "instructions", className: "mb-6" }, [
+                        React.createElement('h2', { key: "title", className: "text-xl font-bold text-slate-700 mb-3" }, "사용법:"),
+                        React.createElement('p', { key: "desc", className: "text-slate-600 mb-2" }, "각 줄에 '한국어문장|영어문장' 형식으로 입력하세요."),
+                        React.createElement('p', { key: "example", className: "text-slate-500 text-sm" }, "예: 나는 학교에 간다|I go to school")
+                    ]),
+                    React.createElement('textarea', {
+                        key: "input",
+                        value: inputText,
+                        onChange: (e) => setInputText(e.target.value),
+                        placeholder: "나는 학교에 간다|I go to school\n그는 책을 읽는다|He reads a book\n우리는 공원에서 논다|We play in the park",
+                        className: "w-full p-4 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none",
+                        rows: 8
+                    }),
+                    React.createElement('button', {
+                        key: "submit",
+                        onClick: handleAddSentence,
+                        className: "w-full mt-4 py-3 bg-teal-600 text-white font-bold text-lg rounded-lg shadow-md hover:bg-teal-700"
+                    }, "문장 추가하기"),
+                    sentences.length > 0 && React.createElement('div', { key: "preview", className: "mt-6 p-4 bg-green-50 rounded-lg" }, [
+                        React.createElement('h3', { key: "title", className: "font-bold text-green-800 mb-2" }, "추가된 문장들:"),
+                        React.createElement('div', { key: "sentences", className: "space-y-2" },
+                            sentences.map((sentence, index) => 
+                                React.createElement('div', { key: index, className: "text-green-700" }, [
+                                    React.createElement('p', { key: "korean", className: "font-semibold" }, sentence.korean),
+                                    React.createElement('p', { key: "english", className: "text-sm" }, sentence.answer)
+                                ])
+                            )
+                        )
+                    ])
+                ])
+            ]);
+        };
+
         // 메인 앱 컴포넌트
         const App = () => {
             const [appMode, setAppMode] = useState(AppMode.START);
+            const [customVocabulary, setCustomVocabulary] = useState(null);
+            const [customSentences, setCustomSentences] = useState(null);
 
             const renderContent = () => {
                 switch (appMode) {
                     case AppMode.WORD_QUIZ:
-                        return React.createElement(WordQuiz, { onBack: () => setAppMode(AppMode.START) });
+                        return React.createElement(WordQuiz, { 
+                            onBack: () => setAppMode(AppMode.START),
+                            customVocabulary: customVocabulary
+                        });
                     case AppMode.SENTENCE_QUIZ:
-                        return React.createElement(SentenceQuiz, { onBack: () => setAppMode(AppMode.START) });
+                        return React.createElement(SentenceQuiz, { 
+                            onBack: () => setAppMode(AppMode.START),
+                            customSentences: customSentences
+                        });
+                    case AppMode.TEACHER_MENU:
+                        return React.createElement(TeacherMenu, { 
+                            onBack: () => setAppMode(AppMode.START),
+                            onSelectMode: setAppMode,
+                            setCustomVocabulary: setCustomVocabulary,
+                            setCustomSentences: setCustomSentences
+                        });
+                    case AppMode.CREATE_WORD:
+                        return React.createElement(CreateWordProblems, { 
+                            onBack: () => setAppMode(AppMode.TEACHER_MENU),
+                            setCustomVocabulary: setCustomVocabulary
+                        });
+                    case AppMode.CREATE_SENTENCE:
+                        return React.createElement(CreateSentenceProblems, { 
+                            onBack: () => setAppMode(AppMode.TEACHER_MENU),
+                            setCustomSentences: setCustomSentences
+                        });
                     case AppMode.START:
                     default:
                         return React.createElement(StartScreen, { onSelectMode: setAppMode });
